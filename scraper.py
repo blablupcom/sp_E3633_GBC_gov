@@ -85,8 +85,8 @@ def convert_mth_strings ( mth_string ):
 
 #### VARIABLES 1.0
 
-entity_id = "E1232_CBC_gov"
-url = "https://www.dorsetforyou.gov.uk/your-council/about-your-council/budgets-and-spending/open-data-and-transparency/payments-to-suppliers-christchurch-borough-council.aspx"
+entity_id = "E2833_ENDC_gov"
+url = "https://www.east-northamptonshire.gov.uk/downloads/download/3085/council_spending_over_500_-_20142015"
 errors = 0
 data = []
 
@@ -98,23 +98,24 @@ soup = BeautifulSoup(html, 'lxml')
 
 #### SCRAPE DATA
 
-links = soup.find('main', id='main').find_all('li')
-for link in links:
-    if 'http' not in link.find('a')['href']:
-        url = 'https://www.dorsetforyou.gov.uk/' + link.find('a')['href'][1:]
+blocks = soup.find('ul', 'item-list').find_all('a')
+for block in blocks:
+    if 'http' not in block['href']:
+        url = 'https://www.east-northamptonshire.gov.uk' + block['href'].replace('/downloads/file/', '/download/downloads/id/')+'.csv'
     else:
-        url = link.find('a')['href'][1:]
-    if '.xlsx' in url or '.xls' in url or '.csv' in url:
-        file_name = link.text.strip()
-        csvYr = link.text.strip()[-4:]
-        if 'Q4' in file_name:
+        url = block['href'].replace('/downloads/file/', '/download/downloads/id/')+'.csv'
+    file_name = block.text.strip()
+    if '.csv' in file_name:
+        csvMth = ''
+        if 'Jan - Mar' in file_name:
             csvMth = 'Q1'
-        if 'Q3' in file_name:
+        if 'Oct - Dec' in file_name:
             csvMth = 'Q4'
-        if 'Q2' in file_name:
+        if 'July - Sept' in file_name or 'Jul - Sept' in file_name:
             csvMth = 'Q3'
-        if 'Q1' in file_name:
+        if 'Apr - Jun' in file_name:
             csvMth = 'Q2'
+        csvYr = file_name.split('.')[0][-4:]
         csvMth = convert_mth_strings(csvMth.upper())
         data.append([csvYr, csvMth, url])
 
