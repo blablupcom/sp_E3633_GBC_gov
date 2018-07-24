@@ -102,6 +102,10 @@ for ul_block in ul_blocks:
     links = ul_block.find_all('a')
     for link in links:
         url = link['href']
+        if 'http' not in url:
+            url = 'http://www.fareham.gov.uk' + url['href']
+        else:
+            url = url['href']
         if '.csv' in url:
             file_name = link.text.strip()
             csvMth = file_name[:3]
