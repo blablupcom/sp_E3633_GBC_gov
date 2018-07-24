@@ -44,8 +44,7 @@ def validateURL(url):
             print ("Attempt {0} - Status code: {1}. Retrying.".format(count, r.status_code))
             count += 1
             r = urllib2.urlopen(url)
-        sourceFilename = r.headers.get('Content-Disposition')
-
+        sourceFilename = r.geturl()
         if sourceFilename:
             ext = os.path.splitext(sourceFilename)[1].replace('"', '').replace(';', '').replace(' ', '')
         else:
@@ -85,8 +84,8 @@ def convert_mth_strings ( mth_string ):
 
 #### VARIABLES 1.0
 
-entity_id = "E2833_ENDC_gov"
-url = "https://www.east-northamptonshire.gov.uk/downloads/download/3085/council_spending_over_500_-_20142015"
+entity_id = "E1734_FBC_gov"
+url = "http://www.fareham.gov.uk/about_the_council/financial_information/expenditurover500.aspx"
 errors = 0
 data = []
 
@@ -98,27 +97,17 @@ soup = BeautifulSoup(html, 'lxml')
 
 #### SCRAPE DATA
 
-blocks = soup.find('ul', 'item-list').find_all('a')
-for block in blocks:
-    if 'http' not in block['href']:
-        url = 'https://www.east-northamptonshire.gov.uk' + block['href'].replace('/downloads/file/', '/download/downloads/id/')+'.csv'
-    else:
-        url = block['href'].replace('/downloads/file/', '/download/downloads/id/')+'.csv'
-    file_name = block.text.strip()
-    if '.csv' in file_name:
-        csvMth = ''
-        if 'Jan - Mar' in file_name:
-            csvMth = 'Q1'
-        if 'Oct - Dec' in file_name:
-            csvMth = 'Q4'
-        if 'July - Sept' in file_name or 'Jul - Sept' in file_name:
-            csvMth = 'Q3'
-        if 'Apr - Jun' in file_name:
-            csvMth = 'Q2'
-        csvYr = file_name.split('.')[0][-4:]
-        csvMth = convert_mth_strings(csvMth.upper())
-        data.append([csvYr, csvMth, url])
-
+ul_blocks = soup.find_all('div', attrs = {'class': 'csstable'})
+for ul_block in ul_blocks:
+    links = ul_block.find_all('a')
+    for link in links:
+        url = link['href']
+        if '.csv' in url:
+            file_name = link.text.strip()
+            csvMth = file_name[:3]
+            csvYr = file_name.split()[1]
+            csvMth = convert_mth_strings(csvMth.upper())
+            data.append([csvYr, csvMth, url])
 
 #### STORE DATA 1.0
 
