@@ -10,7 +10,8 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 
-#### FUNCTIONS 1.0
+#### FUNCTIONS 1.2
+import requests
 
 def validateFilename(filename):
     filenameregex = '^[a-zA-Z0-9]+_[a-zA-Z0-9]+_[a-zA-Z0-9]+_[0-9][0-9][0-9][0-9]_[0-9QY][0-9]$'
@@ -93,8 +94,8 @@ data = []
 
 #### READ HTML 1.0
 
-html = urllib2.urlopen(url)
-soup = BeautifulSoup(html, 'lxml')
+html = requests.get(url)
+soup = BeautifulSoup(html.text, 'lxml')
 
 #### SCRAPE DATA
 
@@ -105,8 +106,8 @@ for block in blocks:
             year_link = 'https://www.westsuffolk.gov.uk' + year_link
         else:
             year_link = year_link
-        year_html = urllib2.urlopen(year_link)
-        year_soup = BeautifulSoup(year_html, 'lxml')
+        year_html = requests.get(year_link)
+        year_soup = BeautifulSoup(year_html.text, 'lxml')
         f_blocks = year_soup.find('div', id='cs_control_1470').find_all('a')
         for f_block in f_blocks:
             if 'http' not in f_block['href']:
