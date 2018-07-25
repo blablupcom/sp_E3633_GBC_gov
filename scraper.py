@@ -85,8 +85,8 @@ def convert_mth_strings ( mth_string ):
 
 #### VARIABLES 1.0
 
-entity_id = "E3632_EAEBC_gov"
-url = "https://www.epsom-ewell.gov.uk/council/about-council/financial-reports/payment-suppliers"
+entity_id = "E3532_FHDC_gov"
+url = "https://www.westsuffolk.gov.uk/Council/Finance_and_Statistics/paymentstosuppliers.cfm"
 errors = 0
 data = []
 
@@ -98,19 +98,26 @@ soup = BeautifulSoup(html, 'lxml')
 
 #### SCRAPE DATA
 
-
-links = soup.find('table', attrs = {'class': 'sticky-enabled'}).find_all('a')
-for link in links:
-    if 'http' not in link['href']:
-        url = 'https://www.epsom-ewell.gov.uk'+link['href']
-    else:
-        url = link['href']
-    file_name = link.text
-    if '.csv' in url:
-        csvMth = file_name[:3]
-        csvYr = file_name[-4:]
-        csvMth = convert_mth_strings(csvMth.upper())
-        data.append([csvYr, csvMth, url])
+blocks = soup.find('div', attrs={'id':'cs_control_1470'}).find_all('a', href=True)
+for block in blocks:
+        year_link = block['href']
+        if 'http' not in year_link:
+            year_link = 'https://www.westsuffolk.gov.uk' + year_link
+        else:
+            year_link = year_link
+        year_html = urllib2.urlopen(year_link)
+        year_soup = BeautifulSoup(year_html, 'lxml')
+        f_blocks = year_soup.find('div', id='cs_control_1470').find_all('a')
+        for f_block in f_blocks:
+            if 'http' not in f_block['href']:
+                url = 'https://www.westsuffolk.gov.uk' + f_block['href']
+            else:
+                url = f_block['href']
+            file_name = f_block.text.replace('(CSV)', '').replace('-19', '').strip()
+            csvMth = file_name.split()[-2][:3]
+            csvYr = file_name[-4:]
+            csvMth = convert_mth_strings(csvMth.upper())
+            data.append([csvYr, csvMth, url])
 
 
 #### STORE DATA 1.0
